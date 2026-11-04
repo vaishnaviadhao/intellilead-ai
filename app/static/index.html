@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>IntelliLead AI — Company Intelligence Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#070c18;--surface:#0f1623;--surface2:#151e2e;--surface3:#1b2638;
+      --border:#1e2d44;--border2:#263347;
+      --text:#dde4ef;--muted:#64748b;--muted2:#425268;
+      --accent:#3b82f6;--accent-h:#2563eb;--accent-glow:rgba(59,130,246,.18);
+      --green:#10b981;--red:#ef4444;--yellow:#f59e0b;--purple:#8b5cf6;--cyan:#06b6d4;
+      --r:10px;--rs:7px;--shadow:0 8px 32px rgba(0,0,0,.5);
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+    /* ── NAV ── */
+    nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;background:rgba(7,12,24,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:-.3px;color:#fff;text-decoration:none}
+    .nav-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--purple));border-radius:7px;display:flex;align-items:center;justify-content:center}
+    .nav-badge{font-size:10px;font-weight:600;padding:2px 7px;background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.22);border-radius:999px;letter-spacing:.4px}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .nav-link{font-size:13px;color:var(--muted);text-decoration:none;transition:color .15s;padding:5px 9px;border-radius:5px}
+    .nav-link:hover{color:var(--text);background:var(--surface2)}
+    .btn-sm{font-size:12.5px;font-weight:500;padding:5px 13px;border-radius:var(--rs);border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;text-decoration:none;transition:all .15s;font-family:inherit}
+    .btn-sm:hover{background:var(--border)}
+
+    /* ── LAYOUT ── */
+    .page{display:none}.page.active{display:block}
+    main{max-width:1120px;margin:0 auto;padding:0 20px 80px}
+
+    /* ── HERO ── */
+    .hero{text-align:center;padding:60px 0 46px;position:relative}
+    .hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:540px;height:320px;background:radial-gradient(ellipse at center,rgba(59,130,246,.09) 0%,transparent 70%);pointer-events:none}
+    .hero-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--accent);margin-bottom:16px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.18);padding:4px 12px;border-radius:999px}
+    h1{font-size:clamp(1.9rem,4.5vw,3rem);font-weight:700;letter-spacing:-.5px;line-height:1.15;color:#fff;margin-bottom:14px}
+    h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-sub{font-size:1rem;color:var(--muted);max-width:500px;margin:0 auto 28px}
+    .hero-pills{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
+    .pill{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:4px 11px;border-radius:999px}
+    .pill .dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+    /* ── UPLOAD CARD ── */
+    .upload-wrap{margin-bottom:36px}
+    .drop-zone{background:var(--surface);border:2px dashed var(--border2);border-radius:var(--r);padding:44px 32px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+    .drop-zone:hover,.drop-zone.over{border-color:var(--accent);background:rgba(59,130,246,.035)}
+    .dz-icon{width:52px;height:52px;background:rgba(59,130,246,.1);border-radius:14px;display:flex;align-items:center;justify-content:center;color:var(--accent);margin:0 auto 16px}
+    .drop-zone h2{font-size:1.15rem;font-weight:600;color:#fff;margin-bottom:6px}
+    .drop-zone p{font-size:13px;color:var(--muted);margin-bottom:18px}
+    .drop-zone p strong{color:var(--text)}
+    .btn-primary{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;padding:9px 20px;background:var(--accent);color:#fff;border:none;border-radius:var(--rs);cursor:pointer;transition:all .15s;font-family:inherit}
+    .btn-primary:hover:not(:disabled){background:var(--accent-h);transform:translateY(-1px);box-shadow:0 4px 16px var(--accent-glow)}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .btn-ghost{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:500;padding:8px 16px;background:var(--surface2);color:var(--text);border:1px solid var(--border2);border-radius:var(--rs);cursor:pointer;transition:all .15s;font-family:inherit}
+    .btn-ghost:hover{background:var(--surface3);border-color:var(--accent)}
+    #fileInput{display:none}
+    .file-hint{font-size:12px;color:var(--muted2);margin-top:14px}
+    .file-hint a{color:var(--accent);text-decoration:none}
+    .file-hint a:hover{text-decoration:underline}
+    .file-badge{display:none;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--rs);padding:10px 14px;margin-top:16px}
+    .file-badge.show{display:flex}
+    .file-badge svg{color:var(--green);flex-shrink:0}
+    .file-name{font-size:13px;font-weight:500;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .file-size{font-size:12px;color:var(--muted)}
+    .upload-actions{display:none;gap:10px;justify-content:center;margin-top:20px}
+    .upload-actions.show{display:flex}
+
+    /* ── PROGRESS ── */
+    #progressWrap{display:none;margin-bottom:32px}
+    #progressWrap.show{display:block}
+    .prog-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:26px 30px}
+    .prog-head{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+    .spinner{width:32px;height:32px;border-radius:50%;border:3px solid var(--border2);border-top-color:var(--accent);animation:spin .75s linear infinite;flex-shrink:0}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .check-icon{display:none;width:32px;height:32px;color:var(--green);flex-shrink:0}
+    .prog-title{font-size:.95rem;font-weight:600;color:#fff}
+    .prog-sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+    .prog-bar-track{background:var(--surface2);border-radius:999px;height:5px;margin-bottom:8px;overflow:hidden}
+    .prog-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--purple));transition:width .5s ease;width:0}
+    .prog-count{font-size:12.5px;color:var(--muted)}
+    .prog-count strong{color:var(--text)}
+    .job-meta{display:flex;gap:20px;flex-wrap:wrap;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+    .job-meta strong{color:var(--text);font-weight:500}
+    .mono-chip{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(59,130,246,.09);padding:2px 7px;border-radius:4px}
+
+    /* ── STATS ── */
+    #statsGrid{display:none;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:26px}
+    #statsGrid.show{display:grid}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+    .stat-label{font-size:10.5px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .stat-num{font-size:1.85rem;font-weight:700;line-height:1;color:#fff}
+    .stat-num.g{color:var(--green)}.stat-num.y{color:var(--yellow)}.stat-num.p{color:var(--purple)}
+    .stat-hint{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+    /* ── RESULTS ── */
+    #resultsSection{display:none}
+    #resultsSection.show{display:block}
+    .results-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+    .results-title{font-size:1rem;font-weight:600;color:#fff}
+    .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .search-box{position:relative}
+    .search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+    .search-box input{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:13px;padding:7px 12px 7px 34px;border-radius:var(--rs);outline:none;width:220px;transition:border-color .15s;font-family:inherit}
+    .search-box input:focus{border-color:var(--accent)}
+    select.filt{background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:12.5px;padding:7px 28px 7px 11px;border-radius:var(--rs);outline:none;cursor:pointer;appearance:none;font-family:inherit;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center}
+    .dl-group{display:flex;gap:7px}
+    .btn-dl{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:500;padding:7px 12px;border:1px solid var(--border2);border-radius:var(--rs);cursor:pointer;background:var(--surface2);color:var(--text);transition:all .15s;font-family:inherit}
+    .btn-dl:hover{background:var(--surface3)}
+    .btn-dl.csv svg{color:var(--green)}.btn-dl.xlsx svg{color:var(--purple)}
+
+    /* ── TABLE ── */
+    .tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+    .tbl-scroll{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead th{text-align:left;padding:11px 14px;font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);background:var(--surface2);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s}
+    thead th:hover{color:var(--text)}
+    thead th.sorted{color:var(--accent)}
+    .sort-ic{margin-left:3px;opacity:.35;font-style:normal}
+    .sorted .sort-ic{opacity:1}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:var(--surface2)}
+    td{padding:11px 14px;vertical-align:middle}
+    .co-cell{display:flex;flex-direction:column;gap:1px}
+    .co-name{font-weight:600;color:#fff;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .co-domain{font-size:11.5px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+    .badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
+    .badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;flex-shrink:0}
+    .b-ok{background:rgba(16,185,129,.11);color:var(--green)}
+    .b-err{background:rgba(239,68,68,.11);color:var(--red)}
+    .b-bot{background:rgba(245,158,11,.11);color:var(--yellow)}
+    .b-def{background:rgba(85,102,122,.11);color:var(--muted)}
+    .ind-tag{font-size:11px;color:var(--accent);background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.18);padding:2px 7px;border-radius:4px;white-space:nowrap}
+    .tc-list{display:flex;flex-wrap:wrap;gap:3px;max-width:260px}
+    .tc{font-size:10.5px;padding:2px 6px;border-radius:4px;font-weight:500;white-space:nowrap;background:var(--surface2);border:1px solid var(--border2);color:var(--muted)}
+    .tc.an{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.18);color:#fcd34d}
+    .tc.cm{background:rgba(139,92,246,.07);border-color:rgba(139,92,246,.18);color:#c4b5fd}
+    .tc.ec{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.18);color:#6ee7b7}
+    .tc.fr{background:rgba(59,130,246,.07);border-color:rgba(59,130,246,.18);color:#93c5fd}
+    .tc.mk{background:rgba(236,72,153,.07);border-color:rgba(236,72,153,.18);color:#f9a8d4}
+    .tc.py{background:rgba(16,185,129,.07);border-color:rgba(16,185,129,.18);color:#6ee7b7}
+    .tc.cl{background:rgba(6,182,212,.07);border-color:rgba(6,182,212,.18);color:#67e8f9}
+    .tc.sp{background:rgba(249,115,22,.07);border-color:rgba(249,115,22,.18);color:#fdba74}
+    .tc.more{background:transparent;border-color:var(--border);color:var(--muted2)}
+    .pg-num{font-size:12px;font-weight:600;color:var(--cyan)}
+    .social-icons{display:flex;align-items:center;gap:6px}
+    .social-btn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:4px;background:var(--surface2);border:1px solid var(--border2);color:var(--muted);transition:all .15s;text-decoration:none}
+    .social-btn:hover{color:var(--accent);border-color:var(--accent)}
+    .tr-empty td{text-align:center;padding:48px;color:var(--muted);font-size:13.5px}
+
+    /* ── PAGINATION ── */
+    .pager{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
+    .pager-btns{display:flex;gap:5px}
+    .pbtn{padding:4px 10px;border-radius:var(--rs);background:var(--surface2);border:1px solid var(--border2);color:var(--text);font-size:12.5px;cursor:pointer;transition:all .15s;font-family:inherit}
+    .pbtn:hover:not(:disabled){background:var(--surface3)}
+    .pbtn:disabled{opacity:.3;cursor:not-allowed}
+    .pbtn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+    /* ── MODAL (COMPANY INTELLIGENCE DRAWER) ── */
+    .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);z-index:999;align-items:center;justify-content:center;padding:16px}
+    .modal-backdrop.show{display:flex}
+    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);width:100%;max-width:760px;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--shadow);overflow:hidden}
+    .modal-header{display:flex;align-items:flex-start;justify-content:space-between;padding:22px 24px;border-bottom:1px solid var(--border);background:var(--surface2)}
+    .modal-title{font-size:1.2rem;font-weight:700;color:#fff}
+    .modal-sub{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;margin-top:2px}
+    .modal-close{background:none;border:none;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;padding:4px 8px;border-radius:4px;transition:color .15s}
+    .modal-close:hover{color:#fff}
+    .modal-body{padding:22px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
+    .modal-sec-title{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .modal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .modal-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px}
+    .modal-box-lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .modal-box-val{font-size:13px;font-weight:500;color:var(--text);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+    .tech-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px;display:flex;flex-direction:column;gap:4px}
+    .tech-top{display:flex;align-items:center;justify-content:space-between}
+    .tech-item-name{font-size:12.5px;font-weight:600;color:#fff}
+    .tech-conf{font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;background:rgba(59,130,246,.15);color:var(--accent)}
+    .tech-ev{font-size:10.5px;color:var(--muted);font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .crawl-table{width:100%;border-collapse:collapse;font-size:12px}
+    .crawl-table th{background:var(--surface2);text-align:left;padding:8px 10px;font-size:10px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border)}
+    .crawl-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+
+    /* ── DB STATUS PANEL ── */
+    .db-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:32px}
+    .db-panel-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+    .db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+    .db-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px}
+    .db-item-label{font-size:10.5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .db-item-value{font-size:13px;font-weight:500;color:var(--text)}
+    .db-item-value.ok{color:var(--green)}.db-item-value.err{color:var(--red)}.db-item-value.warn{color:var(--yellow)}
+    .schema-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+    .schema-chip{font-size:10.5px;background:var(--surface3);border:1px solid var(--border2);padding:2px 8px;border-radius:4px;color:var(--muted)}
+
+    /* ── TOAST ── */
+    #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--border2);color:var(--text);font-size:13.5px;padding:10px 18px;border-radius:var(--rs);box-shadow:var(--shadow);opacity:0;transition:all .22s;z-index:1001;white-space:nowrap;pointer-events:none}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    #toast.err{border-color:rgba(239,68,68,.35);color:#fca5a5}
+
+    /* ── PAGE: DB ADMIN ── */
+    #page-db{padding-top:32px}
+    #page-db h2{font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:6px}
+    #page-db p{font-size:13px;color:var(--muted);margin-bottom:24px}
+    .section-head{font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:24px 0 10px;display:flex;align-items:center;gap:8px}
+    .section-head::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:640px){
+      nav{padding:0 16px}.hero{padding:40px 0 32px}h1{font-size:1.65rem}
+      main{padding:0 12px 60px}.controls{flex-direction:column;align-items:stretch}
+      .search-box input{width:100%}.dl-group{width:100%;justify-content:stretch}
+      .btn-dl{flex:1;justify-content:center}
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showPage('upload')">
+    <div class="nav-logo-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+    </div>
+    IntelliLead AI
+    <span class="nav-badge">v0.3 · Phase 3</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="#" onclick="showPage('upload')">Upload</a>
+    <a class="nav-link" href="#" onclick="showPage('db')">Database</a>
+    <a class="btn-sm" href="/docs" target="_blank">API Docs ↗</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════ PAGE: UPLOAD ════════════════════════════════════ -->
+<div id="page-upload" class="page active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-tag">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+      AI-Powered Lead Intelligence Engine
+    </div>
+    <h1>Turn domains into<br><em>structured company intelligence</em></h1>
+    <p class="hero-sub">Upload a CSV of company websites — IntelliLead crawls each one, detects the full tech stack, social profiles, and exports enriched, sales-ready data.</p>
+    <div class="hero-pills">
+      <span class="pill"><span class="dot"></span>Multi-page BFS crawl</span>
+      <span class="pill"><span class="dot"></span>45+ tech signatures</span>
+      <span class="pill"><span class="dot"></span>LinkedIn &amp; Social links</span>
+      <span class="pill"><span class="dot"></span>Contact email extraction</span>
+      <span class="pill"><span class="dot"></span>PostgreSQL persistence</span>
+      <span class="pill"><span class="dot"></span>CSV &amp; Excel export</span>
+    </div>
+  </section>
+
+  <!-- Upload -->
+  <div class="upload-wrap" id="upload">
+    <div class="drop-zone" id="dropZone">
+      <div class="dz-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      </div>
+      <h2>Drop your CSV here</h2>
+      <p>Needs a <strong>domain</strong>, <strong>website</strong>, or <strong>url</strong> column. Company name is optional.</p>
+      <div style="display:flex;gap:10px;justify-content:center;align-items:center;margin-top:14px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="document.getElementById('fileInput').click()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Choose File
+        </button>
+        <button class="btn-ghost" onclick="loadSampleCsv(event)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Try Sample Dataset (10 companies)
+        </button>
+      </div>
+      <p class="file-hint">CSV · up to 5 MB · up to 5 000 companies · <a href="/v1/samples/companies.csv" download>Download sample CSV</a></p>
+      <input type="file" id="fileInput" accept=".csv,text/csv"/>
+      <div class="file-badge" id="fileBadge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span class="file-name" id="fileName"></span>
+        <span class="file-size" id="fileSize"></span>
+      </div>
+    </div>
+    <div class="upload-actions" id="uploadActions">
+      <button class="btn-primary" id="runBtn" onclick="submitJob()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Run Analysis
+      </button>
+      <button class="btn-ghost" onclick="resetUpload()">Clear</button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progressWrap">
+    <div class="prog-card">
+      <div class="prog-head">
+        <div class="spinner" id="spinner"></div>
+        <svg class="check-icon" id="checkIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 16 8 12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+        <div><div class="prog-title" id="progTitle">Submitting job…</div><div class="prog-sub" id="progSub">Crawling pages and detecting tech stacks</div></div>
+      </div>
+      <div class="prog-bar-track"><div class="prog-bar-fill" id="progFill"></div></div>
+      <div class="prog-count" id="progCount">&nbsp;</div>
+      <div class="job-meta" id="jobMeta"></div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div id="statsGrid"></div>
+
+  <!-- Results -->
+  <div id="resultsSection">
+    <div class="results-top">
+      <div class="results-title" id="resultsTitle">Results</div>
+      <div class="controls">
+        <div class="search-box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input placeholder="Search company, tech…" id="searchInput" oninput="applyFilters()"/>
+        </div>
+        <select class="filt" id="statusFilt" onchange="applyFilters()">
+          <option value="">All statuses</option>
+          <option value="ok">Success</option>
+          <option value="blocked_by_robots">Robots blocked</option>
+          <option value="unreachable">Unreachable</option>
+          <option value="http_error">HTTP error</option>
+          <option value="not_html">Not HTML</option>
+        </select>
+        <select class="filt" id="indFilt" onchange="applyFilters()">
+          <option value="">All industries</option>
+        </select>
+        <div class="dl-group">
+          <button class="btn-dl csv" id="dlCsv">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+          </button>
+          <button class="btn-dl xlsx" id="dlXlsx">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Excel
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table id="rTable">
+          <thead><tr>
+            <th onclick="sortBy('company_name',this)">Company <em class="sort-ic">↕</em></th>
+            <th onclick="sortBy('status',this)">Status <em class="sort-ic">↕</em></th>
+            <th onclick="sortBy('industry_hint',this)">Industry <em class="sort-ic">↕</em></th>
+            <th>Technologies</th>
+            <th onclick="sortBy('pages_crawled',this)">Pages <em class="sort-ic">↕</em></th>
+            <th>Social &amp; Contact</th>
+            <th onclick="sortBy('page_title',this)">Title <em class="sort-ic">↕</em></th>
+          </tr></thead>
+          <tbody id="rBody"></tbody>
+        </table>
+      </div>
+      <div class="pager" id="pager"></div>
+    </div>
+  </div>
+
+</div><!-- /page-upload -->
+
+
+<!-- ═══════════════════════════════════ PAGE: DATABASE ══════════════════════════════════ -->
+<div id="page-db" class="page">
+  <h2>Database &amp; Persistence</h2>
+  <p>Phase 3 persistence layer — PostgreSQL with Row-Level Security, async SQLAlchemy, and Alembic migrations.</p>
+
+  <div class="section-head">Connection status</div>
+  <div class="db-panel">
+    <div class="db-grid" id="dbStatusGrid">
+      <div class="db-item"><div class="db-item-label">API Health</div><div class="db-item-value" id="dbApiStatus">Checking…</div></div>
+      <div class="db-item"><div class="db-item-label">Database</div><div class="db-item-value" id="dbConnStatus">Checking…</div></div>
+      <div class="db-item"><div class="db-item-label">API Version</div><div class="db-item-value" id="dbVersion">—</div></div>
+    </div>
+  </div>
+
+  <div class="section-head">Schema — 20 tables</div>
+  <div class="db-panel">
+    <div class="schema-list">
+      <span class="schema-chip">organizations</span><span class="schema-chip">users</span>
+      <span class="schema-chip">organization_members</span><span class="schema-chip">api_keys</span>
+      <span class="schema-chip">industries</span><span class="schema-chip">companies</span>
+      <span class="schema-chip">company_domains</span><span class="schema-chip">company_profiles</span>
+      <span class="schema-chip">company_social_links</span><span class="schema-chip">organization_companies</span>
+      <span class="schema-chip">sources</span><span class="schema-chip">crawl_jobs</span>
+      <span class="schema-chip">company_pages</span><span class="schema-chip">technology_catalog</span>
+      <span class="schema-chip">technology_detections</span><span class="schema-chip">detection_evidence</span>
+      <span class="schema-chip">growth_signals</span><span class="schema-chip">company_snapshots</span>
+      <span class="schema-chip">icp_profiles</span><span class="schema-chip">campaigns</span>
+      <span class="schema-chip">campaign_companies</span><span class="schema-chip">lead_scores</span>
+      <span class="schema-chip">score_breakdowns</span><span class="schema-chip">review_tasks</span>
+      <span class="schema-chip">review_decisions</span><span class="schema-chip">research_reports</span>
+      <span class="schema-chip">research_citations</span><span class="schema-chip">exports</span>
+      <span class="schema-chip">audit_logs</span>
+    </div>
+  </div>
+
+  <div class="section-head">Security model</div>
+  <div class="db-panel">
+    <div class="db-grid">
+      <div class="db-item"><div class="db-item-label">Tenant Isolation</div><div class="db-item-value ok">PostgreSQL RLS</div></div>
+      <div class="db-item"><div class="db-item-label">RLS Scope</div><div class="db-item-value">12 tenant tables</div></div>
+      <div class="db-item"><div class="db-item-label">Global Tables</div><div class="db-item-value">companies, tech catalog (shared)</div></div>
+      <div class="db-item"><div class="db-item-label">Session Context</div><div class="db-item-value"><span class="mono-chip">app.current_organization_id</span></div></div>
+    </div>
+  </div>
+
+  <div class="section-head">Repositories</div>
+  <div class="db-panel">
+    <div class="db-grid">
+      <div class="db-item"><div class="db-item-label">OrganizationRepository</div><div class="db-item-value">create · get · add_member</div></div>
+      <div class="db-item"><div class="db-item-label">UserRepository</div><div class="db-item-value">create</div></div>
+      <div class="db-item"><div class="db-item-label">CompanyRepository</div><div class="db-item-value">create_or_get · get · list</div></div>
+      <div class="db-item"><div class="db-item-label">CrawlJobRepository</div><div class="db-item-value">create · get (org-scoped)</div></div>
+      <div class="db-item"><div class="db-item-label">ICPRepository</div><div class="db-item-value">create · get</div></div>
+      <div class="db-item"><div class="db-item-label">CampaignRepository</div><div class="db-item-value">create · get</div></div>
+      <div class="db-item"><div class="db-item-label">LeadScoreRepository</div><div class="db-item-value">create (with org check)</div></div>
+      <div class="db-item"><div class="db-item-label">ReviewRepository</div><div class="db-item-value">create · get</div></div>
+    </div>
+  </div>
+
+  <div class="section-head">Quick start commands</div>
+  <div class="db-panel">
+    <pre style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);line-height:1.7;overflow-x:auto"># 1. Start Postgres with Docker
+docker compose -f docker-compose.db.yml up -d
+
+# 2. Run migration
+set -a &amp;&amp; source .env &amp;&amp; set +a
+alembic upgrade head
+
+# 3. Run all tests
+python -m pytest -q
+python -m pytest tests/integration/ -q --asyncio-mode=auto
+
+# 4. Start server
+uvicorn app.main:app --reload</pre>
+  </div>
+</div><!-- /page-db -->
+
+</main>
+
+<!-- ═══════════════════════════════════ DETAIL MODAL ══════════════════════════════════ -->
+<div id="coModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event)">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="mName">Company Details</div>
+        <div class="modal-sub" id="mDomain">domain.com</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="mBody">
+      <!-- Injected dynamically -->
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let jobId=null, allRows=[], filtered=[], selFile=null, pollTmr=null;
+let sortCol='', sortDir=1, pg=1;
+const PER=20;
+
+// ── Page navigation ────────────────────────────────────────────────────────
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(name==='db') checkDbStatus();
+}
+
+// ── DB status check ────────────────────────────────────────────────────────
+async function checkDbStatus(){
+  const apiEl=document.getElementById('dbApiStatus');
+  const connEl=document.getElementById('dbConnStatus');
+  const verEl=document.getElementById('dbVersion');
+  try{
+    const r=await fetch('/health');
+    const d=await r.json();
+    apiEl.textContent='Online'; apiEl.className='db-item-value ok';
+    verEl.textContent='v' + (d.version||'0.1.0');
+    if (d.db_connected) {
+      connEl.textContent='Connected (PostgreSQL)';
+      connEl.className='db-item-value ok';
+    } else if (d.db_ok) {
+      connEl.textContent='Engine Configured (Memory Mode fallback)';
+      connEl.className='db-item-value warn';
+    } else {
+      connEl.textContent='In-Memory Mode';
+      connEl.className='db-item-value warn';
+    }
+  }catch{
+    apiEl.textContent='Offline'; apiEl.className='db-item-value err';
+    connEl.textContent='—'; connEl.className='db-item-value';
+  }
+}
+
+// ── File handling ──────────────────────────────────────────────────────────
+const dropZone=document.getElementById('dropZone');
+const fileInput=document.getElementById('fileInput');
+dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('over')});
+dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop',e=>{e.preventDefault();dropZone.classList.remove('over');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0])});
+fileInput.addEventListener('change',()=>{if(fileInput.files[0])setFile(fileInput.files[0])});
+
+function setFile(f){
+  selFile=f;
+  document.getElementById('fileName').textContent=f.name;
+  document.getElementById('fileSize').textContent=fmtBytes(f.size);
+  document.getElementById('fileBadge').classList.add('show');
+  document.getElementById('uploadActions').classList.add('show');
+}
+
+function resetUpload(){
+  selFile=null;
+  fileInput.value='';
+  document.getElementById('fileBadge').classList.remove('show');
+  document.getElementById('uploadActions').classList.remove('show');
+}
+
+async function loadSampleCsv(e){
+  if(e) e.stopPropagation();
+  try{
+    const res = await fetch('/v1/samples/companies.csv');
+    if(!res.ok) throw new Error('Sample CSV not found');
+    const blob = await res.blob();
+    const file = new File([blob], 'sample_companies.csv', {type:'text/csv'});
+    setFile(file);
+    submitJob();
+  }catch(err){
+    toast('Could not load sample CSV: ' + err.message, true);
+  }
+}
+
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(1)+' MB'}
+
+// ── Submit ─────────────────────────────────────────────────────────────────
+async function submitJob(){
+  if(!selFile)return;
+  const btn=document.getElementById('runBtn');
+  btn.disabled=true; btn.textContent='Submitting…';
+  const fd=new FormData(); fd.append('file',selFile);
+  try{
+    const r=await fetch('/v1/jobs',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok){toast(d.detail||'Upload failed',true);btn.disabled=false;btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run Analysis';return}
+    jobId=d.job_id;
+    showProgress(d);
+    if(pollTmr)clearInterval(pollTmr);
+    pollTmr=setInterval(poll,1800);
+    poll();
+  }catch{toast('Network error',true);btn.disabled=false}
+}
+
+// ── Progress ───────────────────────────────────────────────────────────────
+function showProgress(d){
+  document.getElementById('progressWrap').classList.add('show');
+  document.getElementById('statsGrid').classList.remove('show');
+  document.getElementById('resultsSection').classList.remove('show');
+  document.getElementById('spinner').style.display='block';
+  document.getElementById('checkIcon').style.display='none';
+  document.getElementById('progTitle').textContent='Running analysis…';
+  document.getElementById('progSub').textContent='Crawling pages and detecting tech stacks';
+  document.getElementById('progFill').style.width='0';
+  const s=d.stats||{};
+  document.getElementById('jobMeta').innerHTML=`
+    <span>Job <span class="mono-chip">${jobId.slice(0,12)}…</span></span>
+    <span>Accepted <strong>${d.accepted??s.valid??'—'}</strong></span>
+    <span>Rejected <strong>${d.rejected??((s.invalid||0)+(s.duplicates||0))}</strong></span>`;
+}
+
+async function poll(){
+  try{
+    const r=await fetch('/v1/jobs/'+jobId); const d=await r.json(); if(!r.ok)return;
+    const [done,total]=(d.progress||'0/0').split('/').map(Number);
+    const pct=total>0?Math.round(done/total*100):0;
+    document.getElementById('progFill').style.width=pct+'%';
+    document.getElementById('progCount').innerHTML=`<strong>${done}</strong> / ${total} companies processed`;
+    if(d.status==='done'){clearInterval(pollTmr);finalize(total);}
+    else if(d.status==='failed'){clearInterval(pollTmr);document.getElementById('progTitle').textContent='Job failed';toast('Job failed: '+(d.error||'unknown'),true)}
+  }catch{}
+}
+
+function finalize(total){
+  document.getElementById('spinner').style.display='none';
+  document.getElementById('checkIcon').style.display='block';
+  document.getElementById('progTitle').textContent='Analysis complete!';
+  document.getElementById('progSub').textContent=total+' companies enriched';
+  document.getElementById('progFill').style.width='100%';
+  loadResults();
+}
+
+// ── Results ────────────────────────────────────────────────────────────────
+async function loadResults(){
+  const r=await fetch('/v1/jobs/'+jobId+'/results?limit=1000');
+  allRows=await r.json();
+  populateIndFilter();
+  renderStats();
+  applyFilters();
+  document.getElementById('statsGrid').classList.add('show');
+  document.getElementById('resultsSection').classList.add('show');
+  document.getElementById('dlCsv').onclick=()=>dl('csv');
+  document.getElementById('dlXlsx').onclick=()=>dl('xlsx');
+}
+
+function populateIndFilter(){
+  const inds=[...new Set(allRows.map(r=>r.industry_hint).filter(Boolean).sort())];
+  document.getElementById('indFilt').innerHTML='<option value="">All industries</option>'+inds.map(i=>`<option value="${i}">${i}</option>`).join('');
+}
+
+function renderStats(){
+  const ok=allRows.filter(r=>r.status==='ok').length;
+  const fail=allRows.length-ok;
+  const techs=new Set(allRows.flatMap(r=>(r.technologies||'').split('; ').filter(Boolean)));
+  const pages=allRows.reduce((s,r)=>s+(Number(r.pages_crawled)||0),0);
+  document.getElementById('statsGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-num">${allRows.length}</div><div class="stat-hint">companies</div></div>
+    <div class="stat-card"><div class="stat-label">Success</div><div class="stat-num g">${ok}</div><div class="stat-hint">${Math.round(ok/allRows.length*100)||0}% enriched</div></div>
+    <div class="stat-card"><div class="stat-label">Blocked / Failed</div><div class="stat-num ${fail?'y':'g'}">${fail}</div><div class="stat-hint">skipped</div></div>
+    <div class="stat-card"><div class="stat-label">Unique Techs</div><div class="stat-num p">${techs.size}</div><div class="stat-hint">detected</div></div>
+    <div class="stat-card"><div class="stat-label">Pages Crawled</div><div class="stat-num">${pages}</div><div class="stat-hint">total pages</div></div>`;
+}
+
+// ── Filters ────────────────────────────────────────────────────────────────
+function applyFilters(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sf=document.getElementById('statusFilt').value;
+  const inf=document.getElementById('indFilt').value;
+  filtered=allRows.filter(r=>{
+    if(sf&&r.status!==sf)return false;
+    if(inf&&r.industry_hint!==inf)return false;
+    if(q){
+      const h=[r.company_name,r.domain,r.technologies,r.industry_hint,r.page_title,r.contact_email].join(' ').toLowerCase();
+      if(!h.includes(q))return false;
+    }
+    return true;
+  });
+  if(sortCol){filtered.sort((a,b)=>(a[sortCol]||'').toString().localeCompare((b[sortCol]||'').toString(),undefined,{numeric:true})*sortDir)}
+  pg=1;
+  document.getElementById('resultsTitle').textContent=`Results — ${filtered.length} companies`;
+  renderTable();
+}
+
+let _lastSortEl=null;
+function sortBy(col,el){
+  if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1}
+  if(_lastSortEl)_lastSortEl.classList.remove('sorted');
+  el.classList.add('sorted'); _lastSortEl=el;
+  applyFilters();
+}
+
+// ── Table ──────────────────────────────────────────────────────────────────
+const CAT={
+  'Analytics':'an','CMS':'cm','E-commerce':'ec','Frontend Framework':'fr',
+  'Marketing Automation':'mk','Payments':'py','Cloud, CDN and Hosting':'cl','Support and Chat':'sp'
+};
+
+function renderTable(){
+  const tbody=document.getElementById('rBody');
+  const slice=filtered.slice((pg-1)*PER,pg*PER);
+  if(!slice.length){tbody.innerHTML='<tr class="tr-empty"><td colspan="7">No results match your filters.</td></tr>';renderPager();return}
+  tbody.innerHTML=slice.map((r, i)=>{
+    const actualIdx = (pg-1)*PER + i;
+    const techs=(r.technologies||'').split('; ').filter(Boolean);
+    const details=tryParse(r.tech_details)||[];
+    const catMap={}; details.forEach(d=>catMap[d.name]=d.category);
+    const show=techs.slice(0,3);
+    const rest=techs.length-show.length;
+    const chips=show.map(n=>`<span class="tc ${CAT[catMap[n]]||''}" title="${esc(catMap[n]||'')}">${esc(n)}</span>`);
+    if(rest>0)chips.push(`<span class="tc more">+${rest}</span>`);
+    const techHtml=chips.length?`<div class="tc-list">${chips.join('')}</div>`:'<span style="color:var(--muted2)">—</span>';
+
+    let bc='b-def',bl=r.status;
+    if(r.status==='ok'){bc='b-ok';bl='Success'}
+    else if(r.status==='blocked_by_robots'){bc='b-bot';bl='Robots'}
+    else if(r.status==='unreachable'||r.status?.includes('error')){bc='b-err';bl=r.error||r.status}
+    else if(r.status==='not_html'){bc='b-def';bl='Not HTML'}
+
+    const ind=r.industry_hint&&r.industry_hint!=='Unknown'?`<span class="ind-tag">${esc(r.industry_hint)}</span>`:'<span style="color:var(--muted2)">—</span>';
+    const pgs=(r.pages_crawled!==''&&r.pages_crawled!==undefined)?`<span class="pg-num">${r.pages_crawled}</span><span style="font-size:11px;color:var(--muted)">/${r.pages_discovered||0}</span>`:'—';
+    const title=r.page_title?`<span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${esc(r.page_title)}">${esc(r.page_title)}</span>`:'<span style="color:var(--muted2)">—</span>';
+
+    // Social & Contacts
+    let socialHtml = '<div class="social-icons">';
+    if(r.linkedin_url) socialHtml += `<a class="social-btn" href="${esc(r.linkedin_url)}" target="_blank" title="LinkedIn" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>`;
+    if(r.twitter_url)  socialHtml += `<a class="social-btn" href="${esc(r.twitter_url)}" target="_blank" title="Twitter / X" onclick="event.stopPropagation()"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>`;
+    if(r.github_url)   socialHtml += `<a class="social-btn" href="${esc(r.github_url)}" target="_blank" title="GitHub" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg></a>`;
+    if(r.contact_email)socialHtml += `<a class="social-btn" href="mailto:${esc(r.contact_email)}" title="${esc(r.contact_email)}" onclick="event.stopPropagation()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></a>`;
+    if(socialHtml === '<div class="social-icons">') socialHtml = '<span style="color:var(--muted2)">—</span>';
+    else socialHtml += '</div>';
+
+    return `<tr style="cursor:pointer" onclick="openModal(${actualIdx})" title="Click to view full intelligence dossier">
+      <td><div class="co-cell"><span class="co-name">${esc(r.company_name||r.domain||'—')}</span><span class="co-domain">${esc(r.domain||'')}</span></div></td>
+      <td><span class="badge ${bc}">${esc(bl)}</span></td>
+      <td>${ind}</td>
+      <td>${techHtml}</td>
+      <td>${pgs}</td>
+      <td>${socialHtml}</td>
+      <td>${title}</td>
+    </tr>`;
+  }).join('');
+  renderPager();
+}
+
+function renderPager(){
+  const total=filtered.length,pages=Math.ceil(total/PER);
+  const start=(pg-1)*PER+1,end=Math.min(pg*PER,total);
+  const pager=document.getElementById('pager');
+  if(!total){pager.innerHTML='';return}
+  let btns='';
+  for(let i=1;i<=Math.min(pages,6);i++)btns+=`<button class="pbtn${i===pg?' active':''}" onclick="goPage(${i})">${i}</button>`;
+  if(pages>6)btns+=`<span style="color:var(--muted);padding:0 4px">…</span><button class="pbtn${pages===pg?' active':''}" onclick="goPage(${pages})">${pages}</button>`;
+  pager.innerHTML=`<span>Showing ${start}–${end} of ${total}</span><div class="pager-btns"><button class="pbtn" onclick="goPage(${pg-1})" ${pg===1?'disabled':''}>←</button>${btns}<button class="pbtn" onclick="goPage(${pg+1})" ${pg===pages?'disabled':''}>→</button></div>`;
+}
+
+function goPage(p){pg=p;renderTable();document.getElementById('resultsSection').scrollIntoView({behavior:'smooth',block:'start'})}
+
+// ── Detail Modal ───────────────────────────────────────────────────────────
+function openModal(idx){
+  const r = filtered[idx];
+  if(!r) return;
+
+  document.getElementById('mName').textContent = r.company_name || r.domain || 'Company Dossier';
+  document.getElementById('mDomain').textContent = r.domain || '';
+
+  const techs = tryParse(r.tech_details) || [];
+  const pages = tryParse(r.page_details) || [];
+
+  let html = `
+    <!-- Top Highlights -->
+    <div class="modal-grid">
+      <div class="modal-box">
+        <div class="modal-box-lbl">Status</div>
+        <div class="modal-box-val" style="color:${r.status==='ok'?'var(--green)':'var(--yellow)'}">${esc(r.status)}</div>
+      </div>
+      <div class="modal-box">
+        <div class="modal-box-lbl">Industry</div>
+        <div class="modal-box-val">${esc(r.industry_hint||'Unknown')}</div>
+      </div>
+      <div class="modal-box">
+        <div class="modal-box-lbl">Pages Crawled</div>
+        <div class="modal-box-val">${r.pages_crawled||0} / ${r.pages_discovered||0} discovered</div>
+      </div>
+      <div class="modal-box">
+        <div class="modal-box-lbl">HTTP Status</div>
+        <div class="modal-box-val">${r.http_status || '200'}</div>
+      </div>
+    </div>
+
+    <!-- Company Description & Headline -->
+    <div>
+      <div class="modal-sec-title">Website Overview</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:14px;font-size:13px;color:var(--text);line-height:1.6">
+        ${r.headline ? `<div style="font-weight:600;color:#fff;margin-bottom:6px">${esc(r.headline)}</div>` : ''}
+        ${r.meta_description ? `<div>${esc(r.meta_description)}</div>` : '<div style="color:var(--muted)">No description metadata found.</div>'}
+      </div>
+    </div>
+
+    <!-- Direct Contacts & Social -->
+    <div>
+      <div class="modal-sec-title">Contact &amp; Social Signals</div>
+      <div class="modal-grid">
+        <div class="modal-box">
+          <div class="modal-box-lbl">Contact Email</div>
+          <div class="modal-box-val">${r.contact_email ? `<a href="mailto:${esc(r.contact_email)}" style="color:var(--accent);text-decoration:none">${esc(r.contact_email)}</a>` : '<span style="color:var(--muted)">Not found</span>'}</div>
+        </div>
+        <div class="modal-box">
+          <div class="modal-box-lbl">LinkedIn</div>
+          <div class="modal-box-val">${r.linkedin_url ? `<a href="${esc(r.linkedin_url)}" target="_blank" style="color:var(--accent);text-decoration:none">View Profile ↗</a>` : '<span style="color:var(--muted)">Not found</span>'}</div>
+        </div>
+        <div class="modal-box">
+          <div class="modal-box-lbl">Twitter / X</div>
+          <div class="modal-box-val">${r.twitter_url ? `<a href="${esc(r.twitter_url)}" target="_blank" style="color:var(--accent);text-decoration:none">View Profile ↗</a>` : '<span style="color:var(--muted)">Not found</span>'}</div>
+        </div>
+        <div class="modal-box">
+          <div class="modal-box-lbl">GitHub</div>
+          <div class="modal-box-val">${r.github_url ? `<a href="${esc(r.github_url)}" target="_blank" style="color:var(--accent);text-decoration:none">View Profile ↗</a>` : '<span style="color:var(--muted)">Not found</span>'}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Technologies Detected -->
+    <div>
+      <div class="modal-sec-title">Detected Technologies (${techs.length})</div>
+      ${techs.length ? `
+        <div class="tech-grid">
+          ${techs.map(t => `
+            <div class="tech-item">
+              <div class="tech-top">
+                <span class="tech-item-name">${esc(t.name)}</span>
+                <span class="tech-conf">${Math.round((t.confidence||1)*100)}%</span>
+              </div>
+              <div style="font-size:11px;color:var(--accent);">${esc(t.category||'')}</div>
+              <div class="tech-ev" title="${esc((t.evidence||[]).join(', '))}">
+                ${esc((t.evidence||[]).slice(0,2).join(', '))}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '<div style="font-size:13px;color:var(--muted)">No public signatures detected.</div>'}
+    </div>
+
+    <!-- Crawl Audit -->
+    <div>
+      <div class="modal-sec-title">Crawl Audit (${pages.length} pages recorded)</div>
+      ${pages.length ? `
+        <div style="border:1px solid var(--border);border-radius:var(--rs);overflow:hidden">
+          <table class="crawl-table">
+            <thead>
+              <tr><th>Status</th><th>Type</th><th>URL</th><th>Page Title</th></tr>
+            </thead>
+            <tbody>
+              ${pages.map(p => `
+                <tr>
+                  <td><span class="badge ${p.status==='ok'?'b-ok':'b-def'}">${esc(p.status)}</span></td>
+                  <td><span style="font-size:11px;color:var(--muted)">${esc(p.page_type||'')}</span></td>
+                  <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11px">${esc(p.url)}</td>
+                  <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.title||'—')}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : '<div style="font-size:13px;color:var(--muted)">No subpages visited.</div>'}
+    </div>
+  `;
+
+  document.getElementById('mBody').innerHTML = html;
+  document.getElementById('coModal').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('coModal').classList.remove('show');
+}
+
+function closeModalOnBackdrop(e){
+  if(e.target === document.getElementById('coModal')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+// ── Download ───────────────────────────────────────────────────────────────
+function dl(fmt){if(jobId)window.location.href='/v1/jobs/'+jobId+'/download?format='+fmt}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg,err=false){const el=document.getElementById('toast');el.textContent=msg;el.className='show'+(err?' err':'');setTimeout(()=>el.className='',3200)}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function tryParse(s){try{return JSON.parse(s)}catch{return null}}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+checkDbStatus();
+</script>
+</body>
+</html>
